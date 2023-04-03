@@ -13,8 +13,7 @@ def display_score():
 def obstacle_movement(obstacle_list):
     if obstacle_list:
         for obstacle_rect in obstacle_list:
-            obstacle_rect.x -= 5
-
+            obstacle_rect.x -= 2
             if obstacle_rect.bottom == 450:
                 screen.blit(crab_surf,obstacle_rect)
             else:
@@ -29,8 +28,9 @@ def obstacle_movement(obstacle_list):
 def turtle_movement(turtle_list):
     if turtle_list:
         for turtle_rect in turtle_list:
-            turtle_rect.y -= 3
+            turtle_rect.y -= 1
             screen.blit(turtle_surf,turtle_rect)
+
         turtle_list = [turtle for turtle in turtle_list if turtle.y > 0]
         
         return turtle_list
@@ -39,13 +39,14 @@ def turtle_movement(turtle_list):
     
 def collisions(turtles, obstacles):
     if obstacles:
-        for obstacle_rect in obstacles,turtles:
+        for obstacle_rect in obstacles:
             if turtles:
                 for turtle_rect in turtles:
-                    if turtle_rect.colliderect(obstacle_rect):
+                    if obstacle_rect.colliderect(turtle_rect):
                         return False
             return True
     return True
+
 
 # pygame.init()
 pygame.font.init()
@@ -61,18 +62,26 @@ score = 0
 beach_surface = pygame.image.load('graphics/beach.png').convert()
 
 #turtle
-turtle_surf = pygame.image.load('graphics/turtle.png').convert_alpha()
-turtle_surf = pygame.transform.scale(turtle_surf, (54,64))
+turtle_frame_1 = pygame.image.load('graphics/Turtle/turtle1.png').convert_alpha()
+turtle_frame_2 = pygame.image.load('graphics/Turtle/turtle2.png').convert_alpha()
+turtle_frames = [turtle_frame_1,turtle_frame_2]
+turtle_frame_index = 0
+turtle_surf = turtle_frames[turtle_frame_index]
 
 turtle_rect_list = []
 
 #obstacles
-bird_surf = pygame.image.load('graphics/bird.png').convert_alpha()
-bird_surf = pygame.transform.scale(bird_surf, (64,54))
+bird_frame_1 = pygame.image.load('graphics/Bird/bird1.png').convert_alpha()
+bird_frame_2 = pygame.image.load('graphics/Bird/bird2.png').convert_alpha()
+bird_frames = [bird_frame_1,bird_frame_2]
+bird_frame_index = 0
+bird_surf = bird_frames[bird_frame_index]
 
-crab_surf = pygame.image.load('graphics/crab.png').convert_alpha()
-crab_surf = pygame.transform.scale(crab_surf, (64,54))
-
+crab_frame_1 = pygame.image.load('graphics/Crab/crab1.png').convert_alpha()
+crab_frame_2 = pygame.image.load('graphics/Crab/crab2.png').convert_alpha()
+crab_frames = [crab_frame_1,crab_frame_2]
+crab_frame_index = 0
+crab_surf = crab_frames[crab_frame_index]
 
 obstacle_rect_list = []
 
@@ -91,6 +100,14 @@ start_rect = start_surf.get_rect(center = (400, 400))
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer, 1500)
 
+turtle_animation_timer = pygame.USEREVENT + 2
+pygame.time.set_timer(turtle_animation_timer,300)
+
+bird_animation_timer = pygame.USEREVENT + 3
+pygame.time.set_timer(bird_animation_timer,300)
+
+crab_animation_timer = pygame.USEREVENT + 4
+pygame.time.set_timer(crab_animation_timer,300)
 
 while True:
     for event in pygame.event.get():
@@ -112,18 +129,38 @@ while True:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
                 start_time = int(pygame.time.get_ticks() / 1000)
-        if event.type == obstacle_timer and game_active:
-            number = randint(0,3)
-            if number == 1:
-                turtle_rect_list.append(turtle_surf.get_rect(bottomright = (100,600)))
-            elif number == 2: 
-                turtle_rect_list.append(turtle_surf.get_rect(bottomright = (200,600)))
-            elif number == 3:
-                turtle_rect_list.append(turtle_surf.get_rect(bottomright = (300,600)))
-            if randint(0,2):
-                obstacle_rect_list.append(bird_surf.get_rect(bottomright = (randint(900,1100),390)))
-            else: 
-                obstacle_rect_list.append(crab_surf.get_rect(bottomright = (randint(900,1100),450)))
+        if game_active:
+            if event.type == obstacle_timer:
+                number = randint(1,3)
+                if number == 1:
+                    turtle_rect_list.append(turtle_surf.get_rect(bottomright = (100,600)))
+                elif number == 2: 
+                    turtle_rect_list.append(turtle_surf.get_rect(bottomright = (200,600)))
+                elif number == 3:
+                    turtle_rect_list.append(turtle_surf.get_rect(bottomright = (300,600)))
+                if randint(0,1):
+                    obstacle_rect_list.append(bird_surf.get_rect(bottomright = (randint(900,1100),390)))
+                else: 
+                    obstacle_rect_list.append(crab_surf.get_rect(bottomright = (randint(900,1100),450)))
+            if event.type == turtle_animation_timer:
+                if turtle_frame_index == 0: 
+                    turtle_frame_index = 1
+                else:
+                    turtle_frame_index = 0
+                turtle_surf = turtle_frames[turtle_frame_index]
+            if event.type == bird_animation_timer:
+                if bird_frame_index == 0: 
+                    bird_frame_index = 1
+                else:
+                    bird_frame_index = 0
+                bird_surf = bird_frames[bird_frame_index]
+            if event.type == crab_animation_timer:
+                if crab_frame_index == 0: 
+                    crab_frame_index = 1
+                else:
+                    crab_frame_index = 0
+                crab_surf = crab_frames[crab_frame_index]
+            
     if game_active:
         screen.blit(beach_surface,(0,0))
         # pygame.draw.rect(screen,'Green', score_rect)

@@ -111,7 +111,7 @@ class Shell(pygame.sprite.Sprite):
         super().__init__()
         self.speed = 5
         turtle_frame_1 = pygame.image.load('graphics/shell.png').convert_alpha()
-        turtle_frame_1 = pygame.transform.scale(turtle_frame_1,(30,45))
+        turtle_frame_1 = pygame.transform.scale(turtle_frame_1,(30,35))
         turtle_frame_2 = pygame.transform.rotate(turtle_frame_1,90)
         turtle_frame_3 = pygame.transform.rotate(turtle_frame_2,90)
         self.frames = [turtle_frame_1,turtle_frame_2, turtle_frame_3]
@@ -206,12 +206,14 @@ pygame.time.set_timer(turtle_timer, 3000)
 
 last_shot_time = 0
 SHOOT_DELAY = 1
+one_time = 1
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+
         if game_active:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -221,6 +223,9 @@ while True:
                         shell_group.add(Shell(pygame.mouse.get_pos()))
                         last_shot_time = current_time
             if event.type == obstacle_timer:
+                if score >= 5 and one_time == 1:
+                    pygame.time.set_timer(obstacle_timer, 1000)
+                    one_time +=1
                 random = randint(1,2)
                 if random == 1:
                     enemy_group.add(Enemy_right(choice(['bird','crab'])))

@@ -1,6 +1,7 @@
 import pygame
 from sys import exit
 from random import randint, choice
+import math
 
 class Turtle(pygame.sprite.Sprite):
     def __init__(self):
@@ -26,7 +27,7 @@ class Turtle(pygame.sprite.Sprite):
         self.delete()
     def delete(self):
         global score
-        if self.rect.y <= -100:
+        if self.rect.y <= -50:
             score += 1
             self.kill()
 
@@ -61,6 +62,42 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.x <= -100:
             self.kill()
 
+# class Shells(pygame.sprite.Sprite):
+#     def __init__(self):
+#         super().__init__()
+
+class Shell(pygame.sprite.Sprite):
+    def __init__(self, target_pos):
+        super().__init__()
+        self.speed = 5
+        turtle_frame_1 = pygame.image.load('graphics/shell.png').convert_alpha()
+        turtle_frame_2 = pygame.transform.rotate(turtle_frame_1,90)
+        turtle_frame_3 = pygame.transform.rotate(turtle_frame_2,90)
+        self.frames = [turtle_frame_1,turtle_frame_2, turtle_frame_3]
+        self.animation_index = 0
+        self.image = self.frames[self.animation_index]
+        self.rect = self.image.get_rect()
+        start_pos = (400,550)
+        self.rect.center = start_pos
+        self.angle = math.atan2(target_pos[1] - start_pos[1], target_pos[0] - start_pos[0])
+
+
+    def animation_state(self):
+        self.animation_index += 0.1
+        if self.animation_index >= len(self.frames):
+            self.animation_index = 0
+        self.image = self.frames[int(self.animation_index)]
+
+    def move(self):
+        self.rect.move_ip(self.speed * math.cos(self.angle), self.speed * math.sin(self.angle))
+        if not screen.get_rect().contains(self.rect):
+            self.kill()
+
+    def update(self):
+        self.animation_state()
+        self.move()
+
+
 def display_score(score):
     score_surf = test_font.render(f'Score: {score}',False,'Black')
     score_rect = score_surf.get_rect(center = (200, 30))
@@ -78,6 +115,8 @@ def collision_sprite():
         if pygame.sprite.groupcollide(turtle_group,enemy_group,True, False):
             lives -= 1
             if lives == 0:
+                turtle_group.empty()
+                enemy_group.empty()
                 return False
             return True
         else:
@@ -99,7 +138,7 @@ beach_surface = pygame.image.load('graphics/beach.png').convert()
 #groups
 turtle_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-
+shell_group = pygame.sprite.Group()
 
 #Intro Screen
 game_name = test_font.render('Turtle beach', False, 'Black')
@@ -126,13 +165,20 @@ while True:
             pygame.quit()
             exit()
         if game_active:
-            pass
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    # Skapa en ny missil som åker mot musens position när spelaren vänsterklickar
+                    shell_group.add(Shell(pygame.mouse.get_pos()))
         else:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start_rect.collidepoint(event.pos):
                     game_active = True
+                    lives = 3
+                    score = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
+                lives = 3
+                score = 0
         if game_active:
             if event.type == obstacle_timer:
                 enemy_group.add(Enemy(choice(['bird','crab'])))
@@ -145,10 +191,11 @@ while True:
         score = display_score(score)
         lives = display_lives(lives)
 
+        shell_group.draw(screen)
+        shell_group.update()
 
         turtle_group.draw(screen)
         turtle_group.update()
-
 
         enemy_group.draw(screen)
         enemy_group.update()

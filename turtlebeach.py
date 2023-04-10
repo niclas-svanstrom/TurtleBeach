@@ -206,7 +206,7 @@ pygame.time.set_timer(turtle_timer, 3000)
 
 last_shot_time = 0
 SHOOT_DELAY = 1
-one_time = 1
+one_time = True
 
 while True:
     for event in pygame.event.get():
@@ -223,9 +223,9 @@ while True:
                         shell_group.add(Shell(pygame.mouse.get_pos()))
                         last_shot_time = current_time
             if event.type == obstacle_timer:
-                if score >= 5 and one_time == 1:
+                if score >= 5 and one_time:
                     pygame.time.set_timer(obstacle_timer, 1000)
-                    one_time +=1
+                    one_time = False
                 random = randint(1,2)
                 if random == 1:
                     enemy_group.add(Enemy_right(choice(['bird','crab'])))
